@@ -18,7 +18,7 @@ This Python package is designed to be executed as part of GitHub Actions CI/CD f
 
  ## How does it work?
 
- It's designed to be executed as a Python module (i.e. `python3 -m dataform-unit-tests`) within a step of your GitHub Actions workflow. You set 2 OS environment variables containing your Dataform repo's latest compilation result and the GCP project ID your Dataform repository exists in. It will then discover any unit tests you have written and execute them one by one.
+ It's designed to be executed as a Python module (i.e. `python -m dataform_unit_testing`) within a step of your GitHub Actions workflow. You set 2 OS environment variables containing your Dataform repo's latest compilation result and the GCP project ID your Dataform repository exists in. It will then discover any unit tests you have written and execute them one by one.
 
  It will report to you in the GitHub Actions if any of your tests fail, and display the results on why it did, or if all your tests pass. If it fails, it will fail the GitHub Actions workflow, else it'll continue on to the next steps (whatever they may be.)
 
@@ -57,7 +57,7 @@ After installing the package, you need to have a step to execute the package as 
     GCP_PROJECT_ID: <your-gcp-project-id>
 ```
 
- - `COMPILATION_RESULT` should be set as the compilation result string outputted from an earlier step (please refer to the Pre-requisites section). The format should look something like `projects/<your-gcp-project-id>/locations/<your-dataform-gcp-region>/repositories/<your-dataform-repo-name>/compilationResults/4a4e7155-d24c-4643-8a2e-623a78cb2308`
+ - `COMPILATION_RESULT` should be set as the compilation result string outputted from an earlier step (please refer to the Pre-requisites section). The format should look something like `projects/<your-gcp-project-id>/locations/<your-dataform-gcp-region>/repositories/<your-dataform-repo-name>/compilationResults/<random hash>`
  - `GCP_PROJECT_ID` should be set to the GCP Project ID your Dataform repository exists in.
 
  The above code sample will execute all unit tests you have written. If one or more unit tests fail, this step will fail and your GitHub Actions workflow will fail. Otherwise, it will pass and the rest of your workflow will continue.
@@ -114,11 +114,12 @@ jobs:
 
  ### How to write unit tests
 
- All written tests are in JSON and have the following structure. The file name of your file should be `test_<your_name_of_choice>.json`. Any file with a `test_` prefix and `.json` file extension makes your unit test "discoverable" by the Python package and it will be executed by it. <b>You write your tests within the Dataform UI and can place it any directory you like.</b>
+All written tests are in JSON and have the following structure. The file name of your file should be `test_<your_name_of_choice>.json`. Any file with a `test_` prefix and `.json` file extension makes your unit test "discoverable" by the Python package and it will be executed by it. <b>You write your tests within the Dataform UI and can place it any directory you like.</b>
 
  ```
  {
   "name": "The name of your unit test",
+  "description": "A descriptive text of your unit test",
   "model_to_test": "schema.your_dataform_model",
   "input_data": {
     "schema.input_table_1": [
@@ -194,7 +195,7 @@ You could write a unit test to verify the right address is associated to the rig
 ```
 {
   "name": "Test Staging Customer",
-  "description": "A ",
+  "description": "Tests that personal details join their addresses correctly",
   "model_to_test": "staging.customer",
   "input_data": {
     "customer.customer_personal_details": [
@@ -264,11 +265,11 @@ The unit test framework will then execute the Dataform model with the input tabl
 
 To submit your unit test, you simply create a Pull Request from Dataform and your GitHub Actions Workflow will execute all defined unit tests under the step `Execute Dataform Unit Tests` (or whatever name you called this step). It will execute each unit test found one by one, if all tests pass, this step will pass, for example:
 
-![image](https://github.com/user-attachments/assets/9ede8445-5742-4686-a5e6-9de184144251)
+![image](https://github.com/user-attachments/assets/d26b71bc-6a78-4f0b-bc76-10c96dbfe71f)
 
 If one or more tests fail, this step will fail and will fail the workflow. It will also produce messages on which unit tests failed and display to you which results were actually produced versus what results you were expecting, for example:
 
-![image](https://github.com/user-attachments/assets/1ebb5079-bc7b-4682-95ac-d5cc901891eb)
+![image](https://github.com/user-attachments/assets/9bd26346-9a50-435d-8c6f-9887f4c99410)
 
 As you can see, it highlights which rows were expected, and which rows were the actual results. This allows you to compare what was different for your unit test to fail so you can correct your code as needed. In the above example, the value `null` for `forecast_lag_1` was expected, but `27.21` was actually produced, and this caused the unit test to fail.
 
@@ -283,6 +284,7 @@ You may have source tables that have columns which represents a STRUCT/RECORD an
 ```
 {
   "name": "Test Staging Customers",
+  "description": "Tests the latest address is retrieved for a customer",
   "model_to_test": "staging.customers",
   "input_data": {
     "customer.customer_personal_details": [
@@ -328,6 +330,7 @@ If you want to represent a null, you simply provide `null` as a value like below
 ```
 {
   "name": "Test Staging Customers",
+  "description": "Another unit test",
   "model_to_test": "staging.customers",
   "input_data": {
     "customer.customer_personal_details": [
