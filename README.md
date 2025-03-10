@@ -279,7 +279,7 @@ Your unit tests can exist anywhere within your Dataform file repository. As long
 
 ### Testing tables that have columns which are RECORDs (i.e. ARRAY<STRUCT<>>)
 
-You may have source tables that have columns which represents a STRUCT/RECORD and you want to test those columns. This is possible by creating a nested record like below:
+You may have source tables that have columns which represents a RECORD/ARRAY<STRUCT<>> and you want to test those columns. This is possible by creating a nested record like below:
 
 ```
 {
@@ -340,6 +340,33 @@ If you want to represent a null, you simply provide `null` as a value like below
         "customer_last_name": null
       }
     ]
+  },
+  "expected_output": [
+    {
+      "customer_id": "1",
+      "customer_first_name": "John",
+      "customer_last_name": null
+    }
+  ]
+}
+```
+
+If you want to mock an empty table, you can use a `null` to do so, like below:
+
+```
+{
+  "name": "Test Staging Customers",
+  "description": "Another unit test",
+  "model_to_test": "staging.customers",
+  "input_data": {
+    "customer.customer_personal_details": [
+      {
+        "customer_id": "1",
+        "customer_first_name": "John",
+        "customer_last_name": null
+      }
+    ], 
+    "customer.address_history": null
   },
   "expected_output": [
     {
